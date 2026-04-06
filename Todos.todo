@@ -1,6 +1,13 @@
 Frontend:
+    ☐ Choose frontend framework (or use vanilla js)
+    ☐ Top bar
+        ☐ Searchbar
+        ☐ Register/Sign-in button
+        ☐ List item button
+    ☐ Main dashboard listing items
 Backend:
     Endpoints:
+        ☐ Choose backend server framework
         ☐ `/Register`: Registers an account 
         ☐ `/NewProduct`: Uploads a new item for sale
         ☐ `/ModifyProduct`: Changes an item listing
@@ -8,6 +15,7 @@ Backend:
         ☐  `/ItemDetails`: Returns item details
         ☐  `/PurchaseItem`: Purchases item
     Data Stores:
+        ☐ Choose storage provider
         ☐ DB table storing accounts
         ☐ DB table storing items and their owners
         ☐ DB table showing purchases and the purchaser
