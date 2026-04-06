@@ -1,0 +1,15 @@
+Frontend:
+Backend:
+    Endpoints:
+        ☐ `/Register`: Registers an account 
+        ☐ `/NewProduct`: Uploads a new item for sale
+        ☐ `/ModifyProduct`: Changes an item listing
+        ☐ `/Items`: Returns a paginated list of items
+        ☐  `/ItemDetails`: Returns item details
+        ☐  `/PurchaseItem`: Purchases item
+    Data Stores:
+        ☐ DB table storing accounts
+        ☐ DB table storing items and their owners
+        ☐ DB table showing purchases and the purchaser
+        ☐ Blob storage for images linked to items
+
