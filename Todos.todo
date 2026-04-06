@@ -1,5 +1,5 @@
 Frontend:
-☐ Choose frontend framework (or use vanilla js)
+☐ Choose frontend framework (or use vanilla JS)
     ☐ Top bar
         ☐ Searchbar
         ☐ Register/Sign-in button
@@ -7,17 +7,72 @@ Frontend:
     ☐ Main dashboard listing items
 Backend:
     ☐ Choose backend server framework
-    Endpoints:
+    Endpoints (Input Parameters Indented):
         ☐ `/Register`: Registers an account 
+            Takes a Microsoft ID access token (from OAuth prompt) and other identifying info and stores in users db
+            ☐ Email
+            ☐ Microsoft ID
+            ☐ Full Name
         ☐ `/NewProduct`: Uploads a new item for sale
+            Takes access token and product info to create new product db entry
+            ☐ Microsoft ID
+            ☐ Name
+            ☐ Category
+            ☐ Description
+            ☐ Price
+            ☐ Quantity
+            ☐ (Optional) Image blob
         ☐ `/ModifyProduct`: Changes an item listing
+            Takes access token, existing product ID and product info to modifying existing product db entry
+            ☐ Product ID
+            ☐ Microsoft ID
+            ☐ (Optional) Name
+            ☐ (Optional) Category
+            ☐ (Optional) Description
+            ☐ (Optional) Price
+            ☐ (Optional) Quantity
+            ☐ (Optional) Image blob
+        ☐ `/DeleteProduct`: Deletes an item listing
+            Takes access token and existing product ID and deletes existing product db entry
+            ☐ Product ID
+            ☐ Microsoft ID
         ☐ `/Items`: Returns a paginated list of items
+            Returns name and image (if found) for each item matching search and filter conditions
+            ☐ (Optional) Search string
+            ☐ (Optional) Category filter
+            ☐ Items per page
+            ☐ Page number
         ☐  `/ItemDetails`: Returns item details
+            Returns all product db info
+            ☐ Product ID
         ☐  `/PurchaseItem`: Purchases item
+            Takes access token and selected product ID, decrements quantity and creates new purchase db entry
+            (May add proper wallet system in future)
+            ☐ Product ID
+            ☐ Microsoft ID
     ☐ Choose storage provider
     Data Stores:
         ☐ DB table storing accounts
+            ☐ ID (primary key)
+            ☐ Email
+            ☐ Microsoft ID (received from OAuth prompt)
+            ☐ Full name
+            ☐ Created at timestamp
         ☐ DB table storing items and their owners
+            ☐ Product ID (primary key)
+            ☐ Name
+            ☐ Category
+            ☐ Description
+            ☐ Price
+            ☐ Quantity
+            ☐ Image Reference (link to image in blob storage)
         ☐ DB table showing purchases and the purchaser
+            ☐ Product ID
+            ☐ Purchaser Microsoft ID
+            ☐ Purchaser name
+            ☐ Purchaser email
+            ☐ Seller Microsoft ID
+            ☐ Seller name
+            ☐ Seller email
         ☐ Blob storage for images linked to items
 
