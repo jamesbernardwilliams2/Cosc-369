@@ -1,13 +1,21 @@
 Frontend:
-☐ Choose frontend framework (or use vanilla JS)
+☐ Choose frontend framework `(Vanilla JS)`
     ☐ Top bar
         ☐ Searchbar
-        ☐ Register/Sign-in button
+            ☐ Filters db items
+        ✔ Register/Sign-in button @done(26-04-08 15:56)
+            ✔ Signs in users @done(26-04-08 15:56)
+            ✔ Can log out @done(26-04-08 15:56)
+            ✔ Can only add items when logged in @done(26-04-08 15:56)
         ☐ List item button
+            ☐ Opens a modal form to fill item info
+            ☐ Submits item to db
     ☐ Main dashboard listing items
+        ☐ Lists items in products db
 Backend:
-    ☐ Choose backend server framework
-    Endpoints (Input Parameters Indented):
+    ✘ Choose backend server framework @cancelled(26-04-08 15:54)
+    `Letting Firebase handle all verification with db rules`
+    ✘ Endpoints (Input Parameters Indented): @cancelled(26-04-08 15:54) 
         ☐ `/Register`: Registers an account 
             Takes a Microsoft ID access token (from OAuth prompt) and other identifying info and stores in users db
             ☐ Email
@@ -50,29 +58,29 @@ Backend:
             (May add proper wallet system in future)
             ☐ Product ID
             ☐ Microsoft ID
-    ☐ Choose storage provider
+    ☐ Choose storage provider `(Firebase)`
     Data Stores:
-        ☐ DB table storing accounts
-            ☐ ID (primary key)
-            ☐ Email
-            ☐ Microsoft ID (received from OAuth prompt)
-            ☐ Full name
-            ☐ Created at timestamp
-        ☐ DB table storing items and their owners
-            ☐ Product ID (primary key)
-            ☐ Name
-            ☐ Category
-            ☐ Description
-            ☐ Price
-            ☐ Quantity
-            ☐ Image Reference (link to image in blob storage)
-        ☐ DB table showing purchases and the purchaser
-            ☐ Product ID
-            ☐ Purchaser Microsoft ID
-            ☐ Purchaser name
-            ☐ Purchaser email
-            ☐ Seller Microsoft ID
-            ☐ Seller name
-            ☐ Seller email
+        ✔ DB table storing accounts @done(26-04-08 15:54)
+            ✔ ID (primary key) @done(26-04-08 15:54)
+            ✔ Email @done(26-04-08 15:54)
+            ✔ Microsoft ID (received from OAuth prompt) @done(26-04-08 15:54)
+            ✔ Full name @done(26-04-08 15:54)
+            ✔ Created at timestamp @done(26-04-08 15:54)
+        ✔ DB table storing items and their owners @done(26-04-08 15:55)
+            ✔ Product ID (primary key) @done(26-04-08 15:55)
+            ✔ Name @done(26-04-08 15:55)
+            ✔ Category @done(26-04-08 15:55)
+            ✔ Description @done(26-04-08 15:55)
+            ✔ Price @done(26-04-08 15:55)
+            ✔ Quantity @done(26-04-08 15:55)
+            ✔ Image Reference (link to image in blob storage) @done(26-04-08 15:55)
+        ✔ DB table showing purchases and the purchaser @done(26-04-08 15:55)
+            ✔ Product ID @done(26-04-08 15:55)
+            ✔ Purchaser Microsoft ID @done(26-04-08 15:55)
+            ✔ Purchaser name @done(26-04-08 15:55)
+            ✔ Purchaser email @done(26-04-08 15:55)
+            ✔ Seller Microsoft ID @done(26-04-08 15:55)
+            ✔ Seller name @done(26-04-08 15:55)
+            ✔ Seller email @done(26-04-08 15:55)
         ☐ Blob storage for images linked to items
 
