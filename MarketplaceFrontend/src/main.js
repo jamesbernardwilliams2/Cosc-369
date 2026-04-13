@@ -36,7 +36,6 @@ let authSpot = document.querySelector("#authCorner");
 
 onAuthStateChanged(auth, (user) => {
   renderAuthSpot();
-  console.log("changedState");
   if (user) {
   } else {
   }
@@ -58,15 +57,67 @@ const logout = () => {
     console.error('Sign Out Error', error);
   });
 }
+
+
+// Modal functionality
+const listModal = document.querySelector("#listItemModal");
+const listItemForm = document.querySelector("#listItemForm");
+const closeBtn = document.querySelector(".close-btn");
+const cancelBtn = document.querySelector(".btn-cancel");
+
+const openListModal = () => {
+  listModal.classList.add("show");
+  listItemForm.reset();
+}
+
+const closeListModal = () => {
+  listModal.classList.remove("show");
+  listItemForm.reset();
+}
+
+const handleListItemSubmit = async (e) => {
+  e.preventDefault();
+
+  const formData = new FormData(listItemForm);
+  const itemData = {
+    name: formData.get("itemName"),
+    description: formData.get("itemDescription"),
+    quantity: parseInt(formData.get("itemQuantity")),
+    category: formData.get("itemCategory"),
+    image: formData.get("itemImage"),
+    seller: curUser.uid,
+    createdAt: new Date(),
+    price: 0 // You may want to add a price field to the form
+  };
+
+  // TODO: Send itemData to backend API
+  console.log("Item listed:", itemData);
+  
+  closeListModal();
+}
+
+// Event listeners for modal
+closeBtn.addEventListener("click", closeModal);
+cancelBtn.addEventListener("click", closeModal);
+modal.addEventListener("click", (e) => {
+  if (e.target === modal) {
+    closeModal();
+  }
+});
+
+listItemForm.addEventListener("submit", handleListItemSubmit)
+
 function renderAuthSpot() {
   if (auth.currentUser) {
-    authSpot.innerHTML = `<button id="btn-list">List Item</button><button id="logout">Logout</button>`;
+    authSpot.innerHTML = `<button id="listItem" class="btn-list">List Item</button><button id="logout">Logout</button>`;
     document.querySelector("#logout").addEventListener('click', () => logout());
+    document.querySelector("#listItem").addEventListener('click', () => openListModal());
   } else {
     authSpot.innerHTML = `Not Logged In <button class="btn-auth" id="login">Register / Sign In</button>`
     document.querySelector("#login").addEventListener('click', () => login());
   }
 }
+
 const registerUserInDb = async (user) => {
   const userRef = doc(db, "Users", user.uid);
   await setDoc(userRef, {

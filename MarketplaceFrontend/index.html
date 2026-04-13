@@ -64,6 +64,58 @@
     </div>
   </main>
 
+  <!-- List Item Modal -->
+  <div id="listItemModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>List a New Item</h2>
+        <button class="close-btn">&times;</button>
+      </div>
+      <form id="listItemForm" class="modal-form">
+        <div class="form-group">
+          <label for="itemName">Item Name *</label>
+          <input type="text" id="itemName" name="itemName" required>
+        </div>
+
+        <div class="form-group">
+          <label for="itemDescription">Description *</label>
+          <textarea id="itemDescription" name="itemDescription" rows="4" required></textarea>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="itemQuantity">Quantity *</label>
+            <input type="number" id="itemQuantity" name="itemQuantity" min="1" required>
+          </div>
+
+          <div class="form-group">
+            <label for="itemCategory">Category *</label>
+            <select id="itemCategory" name="itemCategory" required>
+              <option value="">Select a category</option>
+              <option value="electronics">Electronics</option>
+              <option value="books">Books</option>
+              <option value="clothing">Clothing</option>
+              <option value="furniture">Furniture</option>
+              <option value="sports">Sports & Outdoors</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="itemImage">Image (Optional)</label>
+          <input type="file" id="itemImage" name="itemImage" accept="image/*">
+          <small>Supported formats: JPG, PNG, GIF</small>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-cancel">Cancel</button>
+          <button type="submit" class="btn-submit">List Item</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
 </body>
 
 </html>
