@@ -3,7 +3,8 @@ import javascriptLogo from './assets/javascript.svg'
 import viteLogo from './assets/vite.svg'
 import heroImg from './assets/hero.png'
 import { getAuth, signInWithPopup, OAuthProvider, signOut, signInWithRedirect, onAuthStateChanged } from "firebase/auth";
-import { doc, setDoc, getFirestore } from "firebase/firestore";
+import { doc, query, where, setDoc, getFirestore, collection, addDoc, getDocs, getDoc, updateDoc } from "firebase/firestore";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
@@ -24,7 +25,6 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth();
 const db = getFirestore();
 const provider = new OAuthProvider('microsoft.com');
-let curUser;
 
 provider.setCustomParameters({
   // Forces the account selection screen every time
@@ -79,33 +79,187 @@ const handleListItemSubmit = async (e) => {
   e.preventDefault();
 
   const formData = new FormData(listItemForm);
+  const imageFile = formData.get("itemImage");
+
+  let imageUrl = null;
+  if (imageFile && imageFile.size > 0) {
+    const storage = getStorage();
+    const storageRef = ref(storage, `Products/${auth.currentUser.uid}/${Date.now()}_${imageFile.name}`);
+    await uploadBytes(storageRef, imageFile);
+    imageUrl = await getDownloadURL(storageRef);
+  }
+
   const itemData = {
     name: formData.get("itemName"),
     description: formData.get("itemDescription"),
     quantity: parseInt(formData.get("itemQuantity")),
     category: formData.get("itemCategory"),
-    image: formData.get("itemImage"),
-    seller: curUser.uid,
+    imageUrl: imageUrl,
+    seller: auth.currentUser.uid,
     createdAt: new Date(),
-    price: 0 // You may want to add a price field to the form
+    price: formData.get("itemPrice")
   };
 
-  // TODO: Send itemData to backend API
+  // Add to Firestore
+  const productsRef = collection(db, "Products");
+  await addDoc(productsRef, itemData);
+
   console.log("Item listed:", itemData);
-  
+
+  // Refresh the product list
+  await fetchAndRenderProducts();
+
   closeListModal();
 }
 
-// Event listeners for modal
-closeBtn.addEventListener("click", closeModal);
-cancelBtn.addEventListener("click", closeModal);
-modal.addEventListener("click", (e) => {
-  if (e.target === modal) {
-    closeModal();
+closeBtn.addEventListener("click", closeListModal);
+cancelBtn.addEventListener("click", closeListModal);
+listModal.addEventListener("click", (e) => {
+  if (e.target === listModal) {
+    closeListModal();
   }
 });
 
 listItemForm.addEventListener("submit", handleListItemSubmit)
+
+
+// Product Details Modal
+const productModal = document.querySelector("#productModal");
+const closeProductBtn = document.querySelector("#closeProductModal");
+const cancelBuyBtn = document.querySelector("#cancelBuy");
+const buyButton = document.querySelector("#buyButton");
+const decreaseQtyBtn = document.querySelector("#decreaseQty");
+const increaseQtyBtn = document.querySelector("#increaseQty");
+const quantityDisplay = document.querySelector("#quantityDisplay");
+
+let currentProductId = null;
+let currentQuantity = 1;
+
+const openProductModal = async (productId) => {
+  currentProductId = productId;
+  const productDoc = await getDoc(doc(db, "Products", productId));
+  if (productDoc.exists()) {
+    const data = productDoc.data();
+
+    // Fetch seller's full name from Users collection
+    let sellerName = data.seller; // fallback to UID if lookup fails
+    try {
+      const sellerDoc = await getDoc(doc(db, "Users", data.seller));
+      if (sellerDoc.exists()) {
+        sellerName = sellerDoc.data().fullName || data.seller;
+      }
+    } catch (error) {
+      console.error("Error fetching seller info:", error);
+    }
+
+    const imageHtml = data.imageUrl ? `<img src="${data.imageUrl}" alt="${data.name}">` : '<div class="no-image">No Image</div>';
+    document.querySelector("#productTitle").textContent = data.name;
+    document.querySelector("#productDetails").innerHTML = `
+      <div class="product-image-container">
+        ${imageHtml}
+      </div>
+      <div class="product-tags">
+        <span class="tag category-tag">${data.category}</span>
+        <span class="tag seller-tag">Seller: ${sellerName}</span>
+      </div>
+      <div class="product-info">
+        <p><strong>Description:</strong> ${data.description}</p>
+        <p><strong>Price:</strong> $${data.price}</p>
+        <p><strong>Available Quantity:</strong> ${data.quantity}</p>
+      </div>
+    `;
+    currentQuantity = 1;
+    quantityDisplay.textContent = currentQuantity;
+    quantityDisplay.dataset.max = data.quantity;
+    productModal.classList.add("show");
+  }
+}
+
+const closeProductModal = () => {
+  productModal.classList.remove("show");
+  currentProductId = null;
+}
+
+const handleBuy = async () => {
+  if (!auth.currentUser) {
+    alert("Please log in to make a purchase.");
+    return;
+  }
+
+  const quantity = currentQuantity;
+  if (quantity <= 0 || !currentProductId) return;
+
+  try {
+    const productRef = doc(db, "Products", currentProductId);
+    const productSnap = await getDoc(productRef);
+
+    if (!productSnap.exists()) {
+      alert("Product not found.");
+      return;
+    }
+
+    const productData = productSnap.data();
+    if (productData.quantity < quantity) {
+      alert("Not enough items in stock.");
+      return;
+    }
+
+    // Update product quantity
+    const newQuantity = productData.quantity - quantity;
+    await updateDoc(productRef, { quantity: newQuantity });
+
+    // Create purchase record
+    const purchaseData = {
+      buyerUID: auth.currentUser.uid,
+      productID: currentProductId,
+      purchasedAt: new Date().toISOString(),
+      quantity: quantity,
+      sellerUID: productData.seller
+    };
+
+    const purchasesRef = collection(db, "Purchases");
+    await addDoc(purchasesRef, purchaseData);
+
+    alert(`Purchase successful! You bought ${quantity} item(s).`);
+    closeProductModal();
+
+    // Refresh products to show updated quantity
+    await fetchAndRenderProducts();
+  } catch (error) {
+    console.error("Error processing purchase:", error);
+    alert("An error occurred during purchase. Please try again.");
+  }
+}
+
+// Event listeners for product modal
+closeProductBtn.addEventListener("click", closeProductModal);
+cancelBuyBtn.addEventListener("click", closeProductModal);
+buyButton.addEventListener("click", handleBuy);
+
+// Quantity control event listeners
+decreaseQtyBtn.addEventListener("click", () => {
+  if (currentQuantity > 1) {
+    currentQuantity--;
+    quantityDisplay.textContent = currentQuantity;
+  }
+});
+
+increaseQtyBtn.addEventListener("click", () => {
+  const maxQty = parseInt(quantityDisplay.dataset.max);
+  if (currentQuantity < maxQty) {
+    currentQuantity++;
+    quantityDisplay.textContent = currentQuantity;
+  }
+});
+
+productModal.addEventListener("click", (e) => {
+  if (e.target === productModal) {
+    closeProductModal();
+  }
+});
+
+// Make openProductModal global for onclick
+window.openProductModal = openProductModal;
 
 function renderAuthSpot() {
   if (auth.currentUser) {
@@ -126,4 +280,29 @@ const registerUserInDb = async (user) => {
     createdAt: new Date()
   }, { merge: true }); // 'merge' prevents overwriting if they log in again
 };
+
+const fetchAndRenderProducts = async () => {
+  const productsRef = collection(db, "Products");
+  const q = query(productsRef, where("quantity", ">=", 1));
+  const querySnapshot = await getDocs(q);
+  const itemGrid = document.querySelector("#item-grid");
+  let html = "";
+  querySnapshot.forEach((doc) => {
+    const data = doc.data();
+    const imageHtml = data.imageUrl ? `<img src="${data.imageUrl}" alt="${data.name}">` : "No Image";
+    html += `
+      <div class="card" onclick="openProductModal('${doc.id}')">
+        <div class="card-image">${imageHtml}</div>
+        <div class="card-content">
+          <div class="item-price">$${data.price}</div>
+          <div class="item-title">${data.name}</div>
+        </div>
+      </div>
+    `;
+  });
+  itemGrid.innerHTML = html;
+};
+
+// Call fetchAndRenderProducts on page load
+fetchAndRenderProducts();
 

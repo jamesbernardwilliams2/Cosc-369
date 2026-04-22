@@ -29,38 +29,7 @@
   <main class="container">
     <h2 class="dashboard-header">Featured Listings</h2>
 
-    <div class="item-grid">
-      <div class="card">
-        <div class="card-image">Image Placeholder</div>
-        <div class="card-content">
-          <div class="item-price">$45.00</div>
-          <div class="item-title">Vintage Leather Bag</div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-image">Image Placeholder</div>
-        <div class="card-content">
-          <div class="item-price">$120.00</div>
-          <div class="item-title">Mechanical Keyboard</div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-image">Image Placeholder</div>
-        <div class="card-content">
-          <div class="item-price">$15.00</div>
-          <div class="item-title">Succulent Plant Pot</div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-image">Image Placeholder</div>
-        <div class="card-content">
-          <div class="item-price">$850.00</div>
-          <div class="item-title">Road Bicycle - Silver</div>
-        </div>
-      </div>
+    <div class="item-grid" id="item-grid">
     </div>
   </main>
 
@@ -87,19 +56,22 @@
             <label for="itemQuantity">Quantity *</label>
             <input type="number" id="itemQuantity" name="itemQuantity" min="1" required>
           </div>
-
           <div class="form-group">
-            <label for="itemCategory">Category *</label>
-            <select id="itemCategory" name="itemCategory" required>
-              <option value="">Select a category</option>
-              <option value="electronics">Electronics</option>
-              <option value="books">Books</option>
-              <option value="clothing">Clothing</option>
-              <option value="furniture">Furniture</option>
-              <option value="sports">Sports & Outdoors</option>
-              <option value="other">Other</option>
-            </select>
+            <label for="itemPrice">Price *</label>
+            <input type="number" id="itemPrice" name="itemPrice" min="1" required>
           </div>
+        </div>
+        <div class="form-group">
+          <label for="itemCategory">Category *</label>
+          <select id="itemCategory" name="itemCategory" required>
+            <option value="">Select a category</option>
+            <option value="electronics">Electronics</option>
+            <option value="books">Books</option>
+            <option value="clothing">Clothing</option>
+            <option value="furniture">Furniture</option>
+            <option value="sports">Sports & Outdoors</option>
+            <option value="other">Other</option>
+          </select>
         </div>
 
         <div class="form-group">
@@ -113,6 +85,28 @@
           <button type="submit" class="btn-submit">List Item</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- Product Details Modal -->
+  <div id="productModal" class="modal">
+    <div id="productContent" class="modal-content">
+      <div class="modal-header">
+        <h2 id="productTitle">Product Details</h2>
+        <button class="close-btn" id="closeProductModal">&times;</button>
+      </div>
+      <div id="productDetails" class="modal-body">
+        <!-- Product info will be populated here -->
+      </div>
+      <div class="modal-footer">
+        <div class="quantity-controls">
+          <button type="button" class="quantity-btn" id="decreaseQty">-</button>
+          <span class="quantity-display" id="quantityDisplay">1</span>
+          <button type="button" class="quantity-btn" id="increaseQty">+</button>
+        </div>
+        <button type="button" class="btn-cancel" id="cancelBuy">Cancel</button>
+        <button type="button" class="btn-submit" id="buyButton">Buy Now</button>
+      </div>
     </div>
   </div>
 
