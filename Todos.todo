@@ -65,7 +65,7 @@ Backend:
             (May add proper wallet system in future)
             ☐ Product ID
             ☐ Microsoft ID
-    ☐ Choose storage provider `(Firebase)`
+    ✔ Choose storage provider `(Firebase)` @done(26-04-23 12:04)
     Data Stores:
         ✔ DB table storing accounts @done(26-04-08 15:54)
             ✔ ID (primary key) @done(26-04-08 15:54)
