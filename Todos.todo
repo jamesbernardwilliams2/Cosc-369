@@ -3,15 +3,22 @@ Frontend:
     ☐ Top bar
         ☐ Searchbar
             ☐ Filters db items
+        ☐ My profile button
+            ☐ Opens a scrolling modal
+            ☐ User can see and edit their profile info
+            ☐ User can see their purchases
+        ☐ My purchases button
+            ☐ Opens a scrolling modal
+            ☐ User can see a list of their purchases
         ✔ Register/Sign-in button @done(26-04-08 15:56)
             ✔ Signs in users @done(26-04-08 15:56)
             ✔ Can log out @done(26-04-08 15:56)
-            ✔ Can only add items when logged in @done(26-04-08 15:56)
-        ☐ List item button
-            ☐ Opens a modal form to fill item info
-            ☐ Submits item to db
+            ✔ Can only add items when logged in @done(26-04-23 12:02)
+        ✔ List item button @done(26-04-23 12:02)
+            ✔ Opens a modal form to fill item info @done(26-04-23 12:02)
+            ✔ Submits item to db @done(26-04-23 12:02)
     ☐ Main dashboard listing items
-        ☐ Lists items in products db
+        ✔ Lists items in products db @done(26-04-23 12:02)
 Backend:
     ✘ Choose backend server framework @cancelled(26-04-08 15:54)
     `Letting Firebase handle all verification with db rules`
@@ -82,5 +89,5 @@ Backend:
             ✔ Seller Microsoft ID @done(26-04-08 15:55)
             ✔ Seller name @done(26-04-08 15:55)
             ✔ Seller email @done(26-04-08 15:55)
-        ☐ Blob storage for images linked to items
+        ✔ Blob storage for images linked to items @done(26-04-23 12:02)
 
