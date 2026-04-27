@@ -1,27 +1,28 @@
 Frontend:
-☐ Choose frontend framework `(Vanilla JS)`
-    ☐ Top bar
-        ☐ Searchbar
-            ☐ Filters db items
-        ☐ My profile button
-            ☐ Opens a scrolling modal
-            ☐ User can see and edit their profile info
-            ☐ User can see their purchases
-        ☐ My purchases button
-            ☐ Opens a scrolling modal
-            ☐ User can see a list of their purchases
-        ✔ Register/Sign-in button @done(26-04-08 15:56)
-            ✔ Signs in users @done(26-04-08 15:56)
-            ✔ Can log out @done(26-04-08 15:56)
-            ✔ Can only add items when logged in @done(26-04-23 12:02)
-        ✔ List item button @done(26-04-23 12:02)
-            ✔ Opens a modal form to fill item info @done(26-04-23 12:02)
-            ✔ Submits item to db @done(26-04-23 12:02)
-    ☐ Main dashboard listing items
-        ✔ Lists items in products db @done(26-04-23 12:02)
+✘ Choose frontend framework? `(Vanilla JS)` @cancelled(26-04-27 14:09)
+☐ Top bar
+    ✔ Searchbar @done(26-04-27 14:14)
+        ✔ Filters db items @done(26-04-27 14:14)
+    ☐ My profile button
+        ☐ Opens a scrolling modal
+        ☐ User can see and edit their profile info
+        ☐ User can see their listings
+            ☐ User can edit their listings
+    ☐ My purchases button
+        ☐ Opens a scrolling modal
+        ☐ User can see a list of their purchases
+    ✔ Register/Sign-in button @done(26-04-08 15:56)
+        ✔ Signs in users @done(26-04-08 15:56)
+        ✔ Can log out @done(26-04-08 15:56)
+        ✔ Can only add items when logged in @done(26-04-23 12:02)
+    ✔ List item button @done(26-04-23 12:02)
+        ✔ Opens a modal form to fill item info @done(26-04-23 12:02)
+        ✔ Submits item to db @done(26-04-23 12:02)
+☐ Main dashboard listing items
+    ✔ Lists items in products db @done(26-04-23 12:02)
 Backend:
     ✘ Choose backend server framework @cancelled(26-04-08 15:54)
-    `Letting Firebase handle all verification with db rules`
+    `Letting Firebase handle everything secured with rules`
     ✘ Endpoints (Input Parameters Indented): @cancelled(26-04-08 15:54) 
         ☐ `/Register`: Registers an account 
             Takes a Microsoft ID access token (from OAuth prompt) and other identifying info and stores in users db

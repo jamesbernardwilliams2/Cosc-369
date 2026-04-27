@@ -42,6 +42,12 @@ body {
   border: 1px solid #ddd;
   border-radius: 20px;
   outline: none;
+  transition: all 0.3s;
+}
+
+.search-bar:focus {
+  border-color: #27ae60;
+  box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.1);
 }
 
 .nav-buttons,
@@ -474,4 +480,13 @@ button {
   .product-tags {
     justify-content: center;
   }
+}
+
+/* No Results Message */
+.no-results {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #7f8c8d;
+  font-size: 1.1rem;
 }

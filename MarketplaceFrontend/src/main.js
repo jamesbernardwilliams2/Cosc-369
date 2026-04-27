@@ -27,8 +27,7 @@ const db = getFirestore();
 const provider = new OAuthProvider('microsoft.com');
 
 provider.setCustomParameters({
-  // Forces the account selection screen every time
-  // prompt: 'select_account',
+  prompt: 'select_account',
 });
 const analytics = getAnalytics(app);
 
@@ -281,27 +280,72 @@ const registerUserInDb = async (user) => {
   }, { merge: true }); // 'merge' prevents overwriting if they log in again
 };
 
+// Store all products for filtering
+let allProducts = [];
+
 const fetchAndRenderProducts = async () => {
   const productsRef = collection(db, "Products");
   const q = query(productsRef, where("quantity", ">=", 1));
   const querySnapshot = await getDocs(q);
+  
+  // Store all products with their IDs
+  allProducts = [];
+  querySnapshot.forEach((doc) => {
+    allProducts.push({
+      id: doc.id,
+      ...doc.data()
+    });
+  });
+  
+  renderProducts(allProducts);
+};
+
+const renderProducts = (productsToRender) => {
   const itemGrid = document.querySelector("#item-grid");
   let html = "";
-  querySnapshot.forEach((doc) => {
-    const data = doc.data();
-    const imageHtml = data.imageUrl ? `<img src="${data.imageUrl}" alt="${data.name}">` : "No Image";
-    html += `
-      <div class="card" onclick="openProductModal('${doc.id}')">
-        <div class="card-image">${imageHtml}</div>
-        <div class="card-content">
-          <div class="item-price">$${data.price}</div>
-          <div class="item-title">${data.name}</div>
+  
+  if (productsToRender.length === 0) {
+    html = '<p class="no-results">No products found</p>';
+  } else {
+    productsToRender.forEach((product) => {
+      const imageHtml = product.imageUrl ? `<img src="${product.imageUrl}" alt="${product.name}">` : "No Image";
+      html += `
+        <div class="card" onclick="openProductModal('${product.id}')">
+          <div class="card-image">${imageHtml}</div>
+          <div class="card-content">
+            <div class="item-price">$${product.price}</div>
+            <div class="item-title">${product.name}</div>
+          </div>
         </div>
-      </div>
-    `;
-  });
+      `;
+    });
+  }
   itemGrid.innerHTML = html;
 };
+
+const filterAndRenderProducts = (searchQuery) => {
+  const query = searchQuery.toLowerCase().trim();
+  
+  if (query === "") {
+    // If search is empty, show all products
+    renderProducts(allProducts);
+  } else {
+    // Filter products by name or description
+    const filteredProducts = allProducts.filter((product) => {
+      const nameMatch = product.name.toLowerCase().includes(query);
+      const descriptionMatch = product.description.toLowerCase().includes(query);
+      const categoryMatch = product.category.toLowerCase().includes(query);
+      return nameMatch || descriptionMatch || categoryMatch;
+    });
+    renderProducts(filteredProducts);
+  }
+};
+
+// Add search bar event listener
+const searchBar = document.querySelector(".search-bar");
+searchBar.addEventListener("input", (e) => {
+  filterAndRenderProducts(e.target.value);
+});
 
 // Call fetchAndRenderProducts on page load
 fetchAndRenderProducts();
