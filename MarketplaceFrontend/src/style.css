@@ -74,6 +74,15 @@ button {
   background-color: #219150;
 }
 
+.btn-profile {
+  background-color: #2c3e50;
+  color: white;
+}
+
+.btn-profile:hover {
+  background-color: #1f2d3a;
+}
+
 #btn-auth {
   background-color: #ecf0f1;
   color: #2c3e50;
@@ -93,6 +102,10 @@ button {
 .dashboard-header {
   margin-bottom: 1.5rem;
   color: #2c3e50;
+}
+
+.productModal{
+
 }
 
 .item-grid {
@@ -151,7 +164,7 @@ button {
 .modal {
   display: none;
   position: fixed;
-  z-index: 2000;
+  z-index: 1001;
   left: 0;
   top: 0;
   width: 100%;
@@ -180,7 +193,7 @@ button {
   background-color: white;
   padding: 2rem;
   border-radius: 12px;
-  max-width: 500px;
+  max-width: 600px;
   width: 90%;
   max-height: 90vh;
   overflow-y: auto;
@@ -188,9 +201,23 @@ button {
   animation: slideIn 0.3s ease-out;
 }
 
-#productContent{
+#productContent {
   max-width: 1000px;
   width: 60vw;
+}
+
+#purchaseFormModal .modal-content,
+#confirmationModal .modal-content {
+  max-width: 700px;
+}
+
+#profileModal .modal-content {
+  max-width: 820px;
+}
+
+#purchaseFormModal,
+#confirmationModal {
+  z-index: 3000;
 }
 
 @keyframes slideIn {
@@ -489,4 +516,139 @@ button {
   padding: 3rem 1rem;
   color: #7f8c8d;
   font-size: 1.1rem;
+}
+
+/* Confirmation Modal Styles */
+.confirmation-content {
+  color: #2c3e50;
+}
+
+.confirmation-content h3 {
+  font-size: 1.1rem;
+  margin-top: 1.5rem;
+  margin-bottom: 0.8rem;
+  color: #2c3e50;
+  border-bottom: 1px solid #ecf0f1;
+  padding-bottom: 0.5rem;
+}
+
+.confirmation-content h3:first-child {
+  margin-top: 0;
+}
+
+.summary-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.summary-item span:first-child {
+  color: #7f8c8d;
+  flex: 0 0 auto;
+}
+
+.summary-item span:last-child {
+  text-align: right;
+  flex: 1;
+  margin-left: 1rem;
+  font-weight: 500;
+}
+
+.summary-item.total {
+  padding: 1rem 0;
+  border-bottom: 2px solid #27ae60;
+  font-size: 1.1rem;
+}
+
+.summary-item.total span:last-child {
+  color: #27ae60;
+  font-size: 1.2rem;
+}
+
+.profile-prompt-message {
+  background-color: #e8f5e9;
+  color: #1b5e20;
+  border: 1px solid #a5d6a7;
+  border-radius: 6px;
+  padding: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.profile-tabs {
+  display: flex;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+}
+
+.profile-tab {
+  background-color: #ecf0f1;
+  color: #2c3e50;
+  border: 1px solid #d5dde0;
+  padding: 0.55rem 1rem;
+}
+
+.profile-tab.active {
+  background-color: #27ae60;
+  border-color: #27ae60;
+  color: #ffffff;
+}
+
+.profile-tab-panel {
+  display: none;
+}
+
+.profile-tab-panel.active {
+  display: block;
+}
+
+.profile-section {
+  margin-bottom: 1.25rem;
+}
+
+.profile-list {
+  background-color: #f8faf9;
+  border: 1px solid #e1e7e4;
+  border-radius: 8px;
+  padding: 0.8rem;
+}
+
+.profile-list-item {
+  padding: 0.7rem 0;
+  border-bottom: 1px solid #e8eeeb;
+}
+
+.profile-list-item:last-child {
+  border-bottom: none;
+}
+
+.profile-list-title {
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.profile-list-meta {
+  color: #7f8c8d;
+  margin-top: 0.2rem;
+}
+
+.profile-empty {
+  color: #7f8c8d;
+}
+
+/* Form styling for checkout with 3 columns */
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.form-row.three-cols {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+@media (max-width: 600px) {
+  .form-row.three-cols {
+    grid-template-columns: 1fr;
+  }
 }
