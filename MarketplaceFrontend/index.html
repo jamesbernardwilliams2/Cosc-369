@@ -15,7 +15,7 @@
 <body>
 
   <header class="top-bar">
-    <a href="#" class="logo">Student Marketplace</a>
+    <a href="#" class="logo">Bowie Marketplace</a>
 
     <div class="search-container">
       <input type="text" class="search-bar" placeholder="Search for items (e.g. Vintage Camera)...">
@@ -27,11 +27,80 @@
   </header>
 
   <main class="container">
+    <section class="featured-section">
+      <h2 class="dashboard-header">Featured Items</h2>
+      <div class="featured-carousel">
+        <button type="button" class="carousel-nav" id="featuredPrev" aria-label="Previous featured item">‹</button>
+        <div class="featured-track" id="featuredTrack">
+          <p class="no-results">No featured items yet</p>
+        </div>
+        <button type="button" class="carousel-nav" id="featuredNext" aria-label="Next featured item">›</button>
+      </div>
+    </section>
+
     <h2 class="dashboard-header">Product Listings</h2>
 
     <div class="item-grid" id="item-grid">
     </div>
   </main>
+
+  <!-- List Item Modal -->
+  <div id="authMethodModal" class="modal">
+    <div class="modal-content auth-modal-content">
+      <div class="modal-header">
+        <h2 id="authModalTitle">Sign In</h2>
+        <button class="close-btn" id="closeAuthMethodModal">&times;</button>
+      </div>
+      <div class="modal-body auth-modal-body">
+        <div id="signInScreen" class="auth-screen active">
+          <p class="auth-subtitle">Welcome back. Sign in to continue.</p>
+          <button type="button" class="btn-submit auth-provider-btn" id="microsoftLoginBtn">Continue with Microsoft</button>
+          <div class="auth-divider">or use your email</div>
+          <form id="emailSignInForm" class="modal-form">
+            <div class="form-group">
+              <label for="signInEmail">Email</label>
+              <input type="email" id="signInEmail" name="signInEmail" required>
+            </div>
+            <div class="form-group">
+              <label for="signInPassword">Password</label>
+              <input type="password" id="signInPassword" name="signInPassword" required minlength="6">
+            </div>
+            <button type="submit" class="btn-submit">Sign In</button>
+          </form>
+          <p class="auth-switch-text">New here? <button type="button" class="auth-switch-btn" id="showRegisterScreen">Create an account</button></p>
+        </div>
+
+        <div id="registerScreen" class="auth-screen">
+          <p class="auth-subtitle">Create your account to start buying and selling.</p>
+          <button type="button" class="btn-submit auth-provider-btn" id="microsoftRegisterBtn">Continue with Microsoft</button>
+          <div class="auth-divider">or register with email</div>
+          <form id="emailRegisterForm" class="modal-form">
+            <div class="form-group">
+              <label for="registerEmail">Email</label>
+              <input type="email" id="registerEmail" name="registerEmail" required>
+            </div>
+            <div class="form-group">
+              <label for="registerPassword">Password</label>
+              <input type="password" id="registerPassword" name="registerPassword" required minlength="6">
+              <small id="passwordLengthHint" class="password-hint">Password must be at least 6 characters.</small>
+              <small id="passwordSpecialHint" class="password-hint">Password must include at least 1 special character (e.g. ! @ # $ %).</small>
+            </div>
+            <div class="form-group">
+              <label for="registerPasswordConfirm">Confirm Password</label>
+              <input type="password" id="registerPasswordConfirm" name="registerPasswordConfirm" required minlength="6">
+            </div>
+            <button type="submit" class="btn-submit">Register</button>
+          </form>
+          <p class="auth-switch-text">Already have an account? <button type="button" class="auth-switch-btn" id="showSignInScreen">Sign in</button></p>
+        </div>
+
+        <p id="authErrorMessage" class="profile-empty auth-error-message"></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-cancel" id="cancelAuthMethod">Close</button>
+      </div>
+    </div>
+  </div>
 
   <!-- List Item Modal -->
   <div id="listItemModal" class="modal">
@@ -88,6 +157,56 @@
     </div>
   </div>
 
+  <div id="editListingModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Edit Listing</h2>
+        <button class="close-btn" id="closeEditListingModal">&times;</button>
+      </div>
+      <form id="editListingForm" class="modal-form">
+        <input type="hidden" id="editListingId" name="editListingId">
+        <div class="form-group">
+          <label for="editItemName">Item Name *</label>
+          <input type="text" id="editItemName" name="editItemName" required>
+        </div>
+        <div class="form-group">
+          <label for="editItemDescription">Description *</label>
+          <textarea id="editItemDescription" name="editItemDescription" rows="4" required></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="editItemQuantity">Quantity *</label>
+            <input type="number" id="editItemQuantity" name="editItemQuantity" min="0" required>
+          </div>
+          <div class="form-group">
+            <label for="editItemPrice">Price *</label>
+            <input type="number" id="editItemPrice" name="editItemPrice" min="0" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="editItemCategory">Category *</label>
+          <select id="editItemCategory" name="editItemCategory" required>
+            <option value="">Select a category</option>
+            <option value="electronics">Electronics</option>
+            <option value="books">Books</option>
+            <option value="clothing">Clothing</option>
+            <option value="furniture">Furniture</option>
+            <option value="sports">Sports & Outdoors</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="editItemImage">Replace Image (Optional)</label>
+          <input type="file" id="editItemImage" name="editItemImage" accept="image/*">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-cancel" id="cancelEditListing">Cancel</button>
+          <button type="submit" class="btn-submit">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Profile Modal -->
   <div id="profileModal" class="modal">
     <div class="modal-content">
@@ -108,7 +227,7 @@
           </p>
           <h3>Basic Information</h3>
           <div class="form-group">
-            <label for="profileFullName">Full Name *</label>
+            <label for="profileFullName">Display Name *</label>
             <input type="text" id="profileFullName" name="profileFullName" required>
           </div>
           <div class="form-group">
@@ -165,6 +284,39 @@
 
       <div id="transactionsTab" class="profile-tab-panel">
         <div class="profile-section">
+          <h3>Account Wallet</h3>
+          <div id="walletSummary" class="profile-list">
+            <div class="profile-list-item">
+              <div class="profile-list-title">Available Balance</div>
+              <div class="profile-list-meta" id="walletBalance">$0.00</div>
+            </div>
+            <form id="walletCashoutForm" class="modal-form">
+              <div class="form-row three-cols">
+                <div class="form-group">
+                  <label for="cashoutAmount">Cashout Amount ($)</label>
+                  <input type="number" id="cashoutAmount" name="cashoutAmount" min="0.01" step="0.01" required>
+                </div>
+                <div class="form-group">
+                  <label for="cashoutCardNumber">Card Number</label>
+                  <input type="text" id="cashoutCardNumber" name="cashoutCardNumber" placeholder="1234 5678 9012 3456" required>
+                </div>
+                <div class="form-group">
+                  <label for="cashoutCvv">CVV</label>
+                  <input type="text" id="cashoutCvv" name="cashoutCvv" placeholder="123" maxlength="4" required>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="cashoutExpiryDate">Expiry Date</label>
+                  <input type="text" id="cashoutExpiryDate" name="cashoutExpiryDate" placeholder="01/25" required>
+                </div>
+              </div>
+              <button type="submit" class="btn-submit">Cash Out</button>
+              <p id="cashoutMessage" class="profile-empty"></p>
+            </form>
+          </div>
+        </div>
+        <div class="profile-section">
           <h3>Purchases</h3>
           <div id="purchasesList" class="profile-list"></div>
         </div>
@@ -178,6 +330,10 @@
         <div class="profile-section">
           <h3>Current Listings</h3>
           <div id="myListingsList" class="profile-list"></div>
+        </div>
+        <div class="profile-section">
+          <h3>Past Listings</h3>
+          <div id="pastListingsList" class="profile-list"></div>
         </div>
       </div>
     </div>
@@ -271,12 +427,16 @@
         <!-- Product info will be populated here -->
       </div>
       <div class="modal-footer">
-        <div class="quantity-controls">
+        <div id="ownerNotice" class="owner-notice" style="display: none;">
+          You own this listing.
+        </div>
+        <div class="quantity-controls" id="quantityControls">
           <button type="button" class="quantity-btn" id="decreaseQty">-</button>
           <span class="quantity-display" id="quantityDisplay">1</span>
           <button type="button" class="quantity-btn" id="increaseQty">+</button>
         </div>
         <button type="button" class="btn-cancel" id="cancelBuy">Cancel</button>
+        <button type="button" class="btn-submit" id="editFromProductButton" style="display: none;">Edit Listing</button>
         <button type="button" class="btn-submit" id="buyButton">Buy Now</button>
       </div>
     </div>

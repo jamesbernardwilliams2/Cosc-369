@@ -92,6 +92,11 @@ button {
   background-color: #dfe6e9;
 }
 
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
 /* Main Dashboard */
 .container {
   max-width: 1200px;
@@ -102,6 +107,113 @@ button {
 .dashboard-header {
   margin-bottom: 1.5rem;
   color: #2c3e50;
+}
+
+.featured-section {
+  margin-bottom: 2rem;
+}
+
+.featured-carousel {
+  display: block;
+  width: 100%;
+}
+
+.carousel-nav {
+  height: 44px;
+  width: 44px;
+  border-radius: 50%;
+  font-size: 1.5rem;
+  background-color: #2c3e50;
+  color: #ffffff;
+}
+
+.carousel-nav:hover {
+  background-color: #1f2d3a;
+}
+
+#featuredPrev,
+#featuredNext {
+  display: none;
+}
+
+.featured-track {
+  min-height: 155px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  width: 100%;
+  cursor: grab;
+  scrollbar-width: none;
+}
+
+.featured-track::-webkit-scrollbar {
+  display: none;
+}
+
+.featured-card {
+  background: linear-gradient(135deg, #f8faf9 0%, #ecf4f0 100%);
+  border: 1px solid #dde8e2;
+  border-radius: 12px;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 0.95fr 1.05fr;
+  height: 155px;
+  cursor: pointer;
+}
+
+.featured-list {
+  display: flex;
+  width: max-content;
+}
+
+.featured-set {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.featured-list .featured-card {
+  flex: 0 0 340px;
+  min-width: 0;
+}
+
+
+.featured-image {
+  min-height: 155px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #ffffff;
+}
+
+.featured-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.featured-content {
+  padding: 0.7rem 0.85rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.featured-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #21313e;
+}
+
+.featured-meta {
+  margin-top: 0.3rem;
+  color: #5f6f7a;
+  font-size: 0.9rem;
+}
+
+.featured-price {
+  margin-top: 0.35rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1b5e20;
 }
 
 .productModal{
@@ -220,6 +332,10 @@ button {
   z-index: 3000;
 }
 
+#editListingModal {
+  z-index: 3001;
+}
+
 @keyframes slideIn {
   from {
     transform: translateY(-50px);
@@ -320,6 +436,11 @@ button {
   margin-top: 0.3rem;
 }
 
+.password-hint.fulfilled {
+  color: #1b5e20;
+  font-weight: 600;
+}
+
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -339,6 +460,15 @@ button {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+}
+
+.owner-notice {
+  background-color: #e8f5e9;
+  color: #1b5e20;
+  border: 1px solid #a5d6a7;
+  border-radius: 6px;
+  padding: 0.6rem 0.8rem;
+  font-weight: 600;
 }
 
 .quantity-btn {
@@ -507,6 +637,25 @@ button {
   .product-tags {
     justify-content: center;
   }
+
+  .featured-carousel {
+    width: 100%;
+  }
+
+  .carousel-nav {
+    width: 100%;
+    border-radius: 8px;
+  }
+
+  .featured-card {
+    grid-template-columns: 1fr;
+    height: auto;
+    min-height: 155px;
+  }
+
+  .featured-list .featured-card {
+    flex: 0 0 260px;
+  }
 }
 
 /* No Results Message */
@@ -632,8 +781,84 @@ button {
   margin-top: 0.2rem;
 }
 
+.listing-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+
+.edit-listing-btn {
+  background-color: #eef3f1;
+  color: #2c3e50;
+  border: 1px solid #d8e0dc;
+  padding: 0.35rem 0.6rem;
+  line-height: 1;
+  min-width: auto;
+}
+
+.edit-listing-btn:hover {
+  background-color: #dfe8e4;
+}
+
 .profile-empty {
   color: #7f8c8d;
+}
+
+.auth-modal-content {
+  max-width: 520px;
+}
+
+.auth-screen {
+  display: none;
+}
+
+.auth-screen.active {
+  display: block;
+}
+
+.auth-subtitle {
+  color: #5f6f7a;
+  margin-bottom: 1rem;
+}
+
+.auth-provider-btn {
+  width: 100%;
+}
+
+.auth-divider {
+  text-align: center;
+  color: #7f8c8d;
+  font-size: 0.9rem;
+  margin: 1rem 0;
+}
+
+.auth-switch-text {
+  margin-top: 0.8rem;
+  color: #5f6f7a;
+  font-size: 0.95rem;
+}
+
+.auth-switch-btn {
+  background: none;
+  border: none;
+  color: #1e824c;
+  text-decoration: underline;
+  padding: 0;
+  font-weight: 600;
+}
+
+.auth-error-message {
+  margin-top: 0.75rem;
+  color: #c62828;
+}
+
+.wallet-message-error {
+  color: #c62828;
+}
+
+.wallet-message-success {
+  color: #1b5e20;
 }
 
 /* Form styling for checkout with 3 columns */

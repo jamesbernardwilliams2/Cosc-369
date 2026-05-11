@@ -2,7 +2,7 @@ import './style.css'
 import javascriptLogo from './assets/javascript.svg'
 import viteLogo from './assets/vite.svg'
 import heroImg from './assets/hero.png'
-import { getAuth, signInWithPopup, OAuthProvider, signOut, signInWithRedirect, onAuthStateChanged } from "firebase/auth";
+import { getAuth, signInWithPopup, OAuthProvider, signOut, signInWithRedirect, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, query, where, setDoc, getFirestore, collection, addDoc, getDocs, getDoc, updateDoc } from "firebase/firestore";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
@@ -34,6 +34,39 @@ const analytics = getAnalytics(app);
 let authSpot = document.querySelector("#authCorner");
 let currentUserProfile = null;
 let shouldPromptProfileCompletion = false;
+const authMethodModal = document.querySelector("#authMethodModal");
+const closeAuthMethodBtn = document.querySelector("#closeAuthMethodModal");
+const cancelAuthMethodBtn = document.querySelector("#cancelAuthMethod");
+const microsoftLoginBtn = document.querySelector("#microsoftLoginBtn");
+const microsoftRegisterBtn = document.querySelector("#microsoftRegisterBtn");
+const emailSignInForm = document.querySelector("#emailSignInForm");
+const emailRegisterForm = document.querySelector("#emailRegisterForm");
+const authErrorMessage = document.querySelector("#authErrorMessage");
+const signInScreen = document.querySelector("#signInScreen");
+const registerScreen = document.querySelector("#registerScreen");
+const authModalTitle = document.querySelector("#authModalTitle");
+const showRegisterScreenBtn = document.querySelector("#showRegisterScreen");
+const showSignInScreenBtn = document.querySelector("#showSignInScreen");
+const registerPasswordInput = document.querySelector("#registerPassword");
+const passwordLengthHint = document.querySelector("#passwordLengthHint");
+const passwordSpecialHint = document.querySelector("#passwordSpecialHint");
+
+const updatePasswordHints = () => {
+  const password = registerPasswordInput?.value || "";
+  const hasMinLength = password.length >= 6;
+  const hasSpecial = /[^A-Za-z0-9]/.test(password);
+
+  passwordLengthHint?.classList.toggle("fulfilled", hasMinLength);
+  passwordSpecialHint?.classList.toggle("fulfilled", hasSpecial);
+};
+
+const setAuthScreen = (screen) => {
+  const isSignIn = screen === "signin";
+  signInScreen?.classList.toggle("active", isSignIn);
+  registerScreen?.classList.toggle("active", !isSignIn);
+  if (authModalTitle) authModalTitle.textContent = isSignIn ? "Sign In" : "Register";
+  if (authErrorMessage) authErrorMessage.textContent = "";
+};
 
 onAuthStateChanged(auth, (user) => {
   renderAuthSpot();
@@ -47,7 +80,7 @@ const login = async () => {
   const result = await signInWithPopup(auth, provider);
 
   // 1. Get the Firebase User object
-  curUser = result.user;
+  const curUser = result.user;
 
   const isNewUser = await registerUserInDb(curUser);
   shouldPromptProfileCompletion = isNewUser;
@@ -58,6 +91,94 @@ const login = async () => {
   }
 }
 
+const openAuthMethodModal = () => {
+  setAuthScreen("signin");
+  if (emailSignInForm) emailSignInForm.reset();
+  if (emailRegisterForm) emailRegisterForm.reset();
+  updatePasswordHints();
+  authMethodModal.classList.add("show");
+};
+
+const closeAuthMethodModal = () => {
+  if (authErrorMessage) authErrorMessage.textContent = "";
+  authMethodModal.classList.remove("show");
+};
+
+const showAuthError = (error) => {
+  if (!authErrorMessage) return;
+  const rawMessage = error?.message || "Authentication failed.";
+  if (typeof rawMessage === "string" && rawMessage.includes("auth/email-already-in-use")) {
+    authErrorMessage.textContent = "Email is already in use.";
+    return;
+  }
+  if (typeof rawMessage === "string" && rawMessage.includes("auth/password-does-not-meet-requirements")) {
+    const bracketMatch = rawMessage.match(/\[([^\]]+)\]/);
+    authErrorMessage.textContent = bracketMatch ? bracketMatch[1] : "Password does not meet requirements.";
+    return;
+  }
+  authErrorMessage.textContent = rawMessage;
+};
+
+const signInWithMicrosoft = async () => {
+  try {
+    await login();
+    closeAuthMethodModal();
+  } catch (error) {
+    showAuthError(error);
+  }
+};
+
+const handleEmailSignIn = async (e) => {
+  e.preventDefault();
+  const formData = new FormData(emailSignInForm);
+  const email = formData.get("signInEmail")?.toString().trim();
+  const password = formData.get("signInPassword")?.toString();
+
+  if (!email || !password) {
+    showAuthError({ message: "Email and password are required." });
+    return;
+  }
+
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+    closeAuthMethodModal();
+  } catch (error) {
+    showAuthError(error);
+  }
+};
+
+const handleEmailRegister = async (e) => {
+  e.preventDefault();
+  const formData = new FormData(emailRegisterForm);
+  const email = formData.get("registerEmail")?.toString().trim();
+  const password = formData.get("registerPassword")?.toString();
+  const confirmPassword = formData.get("registerPasswordConfirm")?.toString();
+
+  if (!email || !password || !confirmPassword) {
+    showAuthError({ message: "All registration fields are required." });
+    return;
+  }
+
+  if (password !== confirmPassword) {
+    showAuthError({ message: "Passwords do not match." });
+    return;
+  }
+
+  try {
+    const result = await createUserWithEmailAndPassword(auth, email, password);
+    const isNewUser = await registerUserInDb(result.user);
+    shouldPromptProfileCompletion = isNewUser;
+    closeAuthMethodModal();
+    renderAuthSpot();
+
+    if (isNewUser) {
+      await openProfileModal({ showPrompt: true });
+    }
+  } catch (error) {
+    showAuthError(error);
+  }
+};
+
 const logout = () => {
   auth.signOut().then(function () {
     console.log('Signed Out');
@@ -66,12 +187,31 @@ const logout = () => {
   });
 }
 
+closeAuthMethodBtn?.addEventListener("click", closeAuthMethodModal);
+cancelAuthMethodBtn?.addEventListener("click", closeAuthMethodModal);
+microsoftLoginBtn?.addEventListener("click", signInWithMicrosoft);
+microsoftRegisterBtn?.addEventListener("click", signInWithMicrosoft);
+emailSignInForm?.addEventListener("submit", handleEmailSignIn);
+emailRegisterForm?.addEventListener("submit", handleEmailRegister);
+registerPasswordInput?.addEventListener("input", updatePasswordHints);
+showRegisterScreenBtn?.addEventListener("click", () => setAuthScreen("register"));
+showSignInScreenBtn?.addEventListener("click", () => setAuthScreen("signin"));
+authMethodModal?.addEventListener("click", (e) => {
+  if (e.target === authMethodModal) {
+    closeAuthMethodModal();
+  }
+});
+
 
 // Modal functionality
 const listModal = document.querySelector("#listItemModal");
 const listItemForm = document.querySelector("#listItemForm");
-const closeBtn = document.querySelector(".close-btn");
-const cancelBtn = document.querySelector(".btn-cancel");
+const closeBtn = listModal?.querySelector(".close-btn");
+const cancelBtn = listModal?.querySelector(".btn-cancel");
+const editListingModal = document.querySelector("#editListingModal");
+const editListingForm = document.querySelector("#editListingForm");
+const closeEditListingBtn = document.querySelector("#closeEditListingModal");
+const cancelEditListingBtn = document.querySelector("#cancelEditListing");
 
 const openListModal = () => {
   listModal.classList.add("show");
@@ -120,8 +260,8 @@ const handleListItemSubmit = async (e) => {
   closeListModal();
 }
 
-closeBtn.addEventListener("click", closeListModal);
-cancelBtn.addEventListener("click", closeListModal);
+closeBtn?.addEventListener("click", closeListModal);
+cancelBtn?.addEventListener("click", closeListModal);
 listModal.addEventListener("click", (e) => {
   if (e.target === listModal) {
     closeListModal();
@@ -129,6 +269,88 @@ listModal.addEventListener("click", (e) => {
 });
 
 listItemForm.addEventListener("submit", handleListItemSubmit)
+
+const closeEditListingModal = () => {
+  editListingModal?.classList.remove("show");
+  editListingForm?.reset();
+};
+
+const openEditListingModal = async (listingId) => {
+  if (!auth.currentUser || !listingId) return;
+  const listingSnap = await getDoc(doc(db, "Products", listingId));
+  if (!listingSnap.exists()) {
+    alert("Listing not found.");
+    return;
+  }
+
+  const listing = listingSnap.data();
+  if (listing.seller !== auth.currentUser.uid) {
+    alert("You can only edit your own listings.");
+    return;
+  }
+
+  document.querySelector("#editListingId").value = listingId;
+  document.querySelector("#editItemName").value = listing.name || "";
+  document.querySelector("#editItemDescription").value = listing.description || "";
+  document.querySelector("#editItemQuantity").value = listing.quantity ?? 0;
+  document.querySelector("#editItemPrice").value = listing.price ?? 0;
+  document.querySelector("#editItemCategory").value = listing.category || "";
+  editListingModal?.classList.add("show");
+};
+
+const handleEditListingSubmit = async (e) => {
+  e.preventDefault();
+  if (!auth.currentUser) return;
+
+  const formData = new FormData(editListingForm);
+  const listingId = formData.get("editListingId")?.toString();
+  if (!listingId) return;
+
+  const listingRef = doc(db, "Products", listingId);
+  const listingSnap = await getDoc(listingRef);
+  if (!listingSnap.exists()) {
+    alert("Listing not found.");
+    return;
+  }
+
+  const listing = listingSnap.data();
+  if (listing.seller !== auth.currentUser.uid) {
+    alert("You can only edit your own listings.");
+    return;
+  }
+
+  const imageFile = formData.get("editItemImage");
+  let imageUrl = listing.imageUrl || null;
+  if (imageFile && imageFile.size > 0) {
+    const storage = getStorage();
+    const storageRef = ref(storage, `Products/${auth.currentUser.uid}/${Date.now()}_${imageFile.name}`);
+    await uploadBytes(storageRef, imageFile);
+    imageUrl = await getDownloadURL(storageRef);
+  }
+
+  await updateDoc(listingRef, {
+    name: formData.get("editItemName"),
+    description: formData.get("editItemDescription"),
+    quantity: Number(formData.get("editItemQuantity")),
+    price: Number(formData.get("editItemPrice")),
+    category: formData.get("editItemCategory"),
+    imageUrl: imageUrl,
+    updatedAt: new Date()
+  });
+
+  closeEditListingModal();
+  await Promise.all([loadMyListingsData(), fetchAndRenderProducts()]);
+  alert("Listing updated.");
+};
+
+closeEditListingBtn?.addEventListener("click", closeEditListingModal);
+cancelEditListingBtn?.addEventListener("click", closeEditListingModal);
+editListingForm?.addEventListener("submit", handleEditListingSubmit);
+editListingModal?.addEventListener("click", (e) => {
+  if (e.target === editListingModal) {
+    closeEditListingModal();
+  }
+});
 
 // Profile modal functionality
 const profileModal = document.querySelector("#profileModal");
@@ -141,6 +363,20 @@ const profileTabPanels = document.querySelectorAll(".profile-tab-panel");
 const purchasesList = document.querySelector("#purchasesList");
 const salesList = document.querySelector("#salesList");
 const myListingsList = document.querySelector("#myListingsList");
+const pastListingsList = document.querySelector("#pastListingsList");
+const walletBalance = document.querySelector("#walletBalance");
+const walletCashoutForm = document.querySelector("#walletCashoutForm");
+const cashoutMessage = document.querySelector("#cashoutMessage");
+let currentWalletAvailable = 0;
+
+const setCashoutMessage = (message, isError = false) => {
+  if (!cashoutMessage) return;
+  cashoutMessage.textContent = message;
+  cashoutMessage.classList.remove("wallet-message-error", "wallet-message-success");
+  if (message) {
+    cashoutMessage.classList.add(isError ? "wallet-message-error" : "wallet-message-success");
+  }
+};
 
 const loadCurrentUserProfile = async () => {
   if (!auth.currentUser) return;
@@ -176,6 +412,16 @@ const getProductName = async (productId) => {
   }
 };
 
+const getProductDetails = async (productId) => {
+  try {
+    const productSnap = await getDoc(doc(db, "Products", productId));
+    if (!productSnap.exists()) return null;
+    return productSnap.data();
+  } catch {
+    return null;
+  }
+};
+
 const loadTransactionTabData = async () => {
   if (!auth.currentUser) return;
   const userId = auth.currentUser.uid;
@@ -201,21 +447,100 @@ const loadTransactionTabData = async () => {
     purchasesList.innerHTML = purchaseItems.join("");
   }
 
+  let totalEarned = 0;
   if (salesSnap.empty) {
     salesList.innerHTML = `<p class="profile-empty">No sales yet.</p>`;
   } else {
     const saleItems = await Promise.all(salesSnap.docs.map(async (saleDoc) => {
       const data = saleDoc.data();
-      const productName = await getProductName(data.productID);
+      const productDetails = await getProductDetails(data.productID);
+      const productName = productDetails?.name || "Deleted item";
+      const unitPrice = Number(productDetails?.price) || 0;
+      const quantitySold = Number(data.quantity) || 0;
+      const lineTotal = unitPrice * quantitySold;
+      totalEarned += lineTotal;
       return `
         <div class="profile-list-item">
           <div class="profile-list-title">${productName}</div>
-          <div class="profile-list-meta">Qty sold: ${data.quantity} | Date: ${formatDate(data.purchasedAt)}</div>
+          <div class="profile-list-meta">Qty sold: ${quantitySold} | Earned: $${lineTotal.toFixed(2)} | Date: ${formatDate(data.purchasedAt)}</div>
         </div>
       `;
     }));
     salesList.innerHTML = saleItems.join("");
   }
+
+  await loadCurrentUserProfile();
+  const totalCashedOut = Number(currentUserProfile?.totalCashedOut) || 0;
+  currentWalletAvailable = Math.max(0, totalEarned - totalCashedOut);
+  if (walletBalance) walletBalance.textContent = `$${currentWalletAvailable.toFixed(2)}`;
+};
+
+const handleWalletCashout = async (e) => {
+  e.preventDefault();
+  if (!auth.currentUser) {
+    setCashoutMessage("Please log in first.", true);
+    return;
+  }
+
+  const formData = new FormData(walletCashoutForm);
+  const amount = Number(formData.get("cashoutAmount"));
+  const cardNumber = (formData.get("cashoutCardNumber") || "").toString().trim();
+  const cvv = (formData.get("cashoutCvv") || "").toString().trim();
+  const expiryDate = (formData.get("cashoutExpiryDate") || "").toString().trim();
+
+  if (!Number.isFinite(amount) || amount <= 0) {
+    setCashoutMessage("Enter a valid cashout amount.", true);
+    return;
+  }
+
+  if (!cardNumber) {
+    setCashoutMessage("Please provide a card number.", true);
+    return;
+  }
+
+  if (!cvv) {
+    setCashoutMessage("Please provide a CVV.", true);
+    return;
+  }
+
+  if (!expiryDate) {
+    setCashoutMessage("Please provide an expiry date.", true);
+    return;
+  }
+
+  if (amount > currentWalletAvailable) {
+    setCashoutMessage("Cashout amount exceeds available wallet balance.", true);
+    return;
+  }
+
+  await loadCurrentUserProfile();
+  const existingCashedOut = Number(currentUserProfile?.totalCashedOut) || 0;
+  const newTotalCashedOut = existingCashedOut + amount;
+
+  await setDoc(doc(db, "Users", auth.currentUser.uid), {
+    totalCashedOut: newTotalCashedOut,
+    lastCashoutAt: new Date(),
+    lastCashoutAmount: amount,
+    lastCashoutCardLast4: cardNumber.slice(-4),
+    cardNumber: cardNumber,
+    cvv: cvv,
+    expiryDate: expiryDate
+  }, { merge: true });
+
+  setCashoutMessage(`Cashout successful. Sent $${amount.toFixed(2)} to card ending in ${cardNumber.slice(-4)}.`);
+  const amountField = document.querySelector("#cashoutAmount");
+  if (amountField) amountField.value = "";
+  await loadTransactionTabData();
+};
+
+const prefillWalletCashoutForm = () => {
+  if (!walletCashoutForm) return;
+  const cardField = document.querySelector("#cashoutCardNumber");
+  const cvvField = document.querySelector("#cashoutCvv");
+  const expiryField = document.querySelector("#cashoutExpiryDate");
+  if (cardField) cardField.value = currentUserProfile?.cardNumber || "";
+  if (cvvField) cvvField.value = currentUserProfile?.cvv || "";
+  if (expiryField) expiryField.value = currentUserProfile?.expiryDate || "";
 };
 
 const loadMyListingsData = async () => {
@@ -225,19 +550,41 @@ const loadMyListingsData = async () => {
 
   if (listingsSnap.empty) {
     myListingsList.innerHTML = `<p class="profile-empty">Nothing listed yet.</p>`;
+    if (pastListingsList) pastListingsList.innerHTML = `<p class="profile-empty">No past listings yet.</p>`;
     return;
   }
 
-  const listingsHtml = listingsSnap.docs.map((listingDoc) => {
+  const allListings = listingsSnap.docs.map((listingDoc) => {
     const listing = listingDoc.data();
-    return `
+    return {
+      id: listingDoc.id,
+      quantity: Number(listing.quantity) || 0,
+      html: `
       <div class="profile-list-item">
-        <div class="profile-list-title">${listing.name}</div>
-        <div class="profile-list-meta">Price: $${listing.price} | Quantity: ${listing.quantity} | Category: ${listing.category}</div>
+        <div class="listing-row">
+          <div>
+            <div class="profile-list-title">${listing.name}</div>
+            <div class="profile-list-meta">Price: $${listing.price} | Quantity: ${listing.quantity} | Category: ${listing.category}</div>
+          </div>
+          <button type="button" class="edit-listing-btn" onclick="openEditListingModal('${listingDoc.id}')" title="Edit listing" aria-label="Edit listing">✎</button>
+        </div>
       </div>
-    `;
+    `
+    };
   });
-  myListingsList.innerHTML = listingsHtml.join("");
+
+  const currentListings = allListings.filter((item) => item.quantity > 0).map((item) => item.html);
+  const pastListings = allListings.filter((item) => item.quantity <= 0).map((item) => item.html);
+
+  myListingsList.innerHTML = currentListings.length
+    ? currentListings.join("")
+    : `<p class="profile-empty">No active listings.</p>`;
+
+  if (pastListingsList) {
+    pastListingsList.innerHTML = pastListings.length
+      ? pastListings.join("")
+      : `<p class="profile-empty">No past listings yet.</p>`;
+  }
 };
 
 const openProfileModal = async ({ showPrompt = false } = {}) => {
@@ -268,6 +615,8 @@ const openProfileModal = async ({ showPrompt = false } = {}) => {
 
   setActiveProfileTab("accountTab");
   await Promise.all([loadTransactionTabData(), loadMyListingsData()]);
+  prefillWalletCashoutForm();
+  setCashoutMessage("");
   profileModal.classList.add("show");
 };
 
@@ -305,6 +654,7 @@ const handleProfileSubmit = async (e) => {
 closeProfileBtn.addEventListener("click", closeProfileModal);
 cancelProfileBtn.addEventListener("click", closeProfileModal);
 profileForm.addEventListener("submit", handleProfileSubmit);
+walletCashoutForm?.addEventListener("submit", handleWalletCashout);
 profileTabs.forEach((tabBtn) => {
   tabBtn.addEventListener("click", () => {
     setActiveProfileTab(tabBtn.dataset.tab);
@@ -322,6 +672,9 @@ const productModal = document.querySelector("#productModal");
 const closeProductBtn = document.querySelector("#closeProductModal");
 const cancelBuyBtn = document.querySelector("#cancelBuy");
 const buyButton = document.querySelector("#buyButton");
+const editFromProductButton = document.querySelector("#editFromProductButton");
+const ownerNotice = document.querySelector("#ownerNotice");
+const quantityControls = document.querySelector("#quantityControls");
 const decreaseQtyBtn = document.querySelector("#decreaseQty");
 const increaseQtyBtn = document.querySelector("#increaseQty");
 const quantityDisplay = document.querySelector("#quantityDisplay");
@@ -366,6 +719,22 @@ const openProductModal = async (productId) => {
     currentQuantity = 1;
     quantityDisplay.textContent = currentQuantity;
     quantityDisplay.dataset.max = data.quantity;
+
+    const currentUserId = String(auth.currentUser?.uid || "");
+    const sellerId = String(data.seller || "");
+    const isOwner = currentUserId.length > 0 && currentUserId === sellerId;
+    if (isOwner) {
+      buyButton.style.display = "none";
+      quantityControls.style.display = "none";
+      ownerNotice.style.display = "block";
+      editFromProductButton.style.display = "inline-block";
+    } else {
+      buyButton.style.display = "inline-block";
+      quantityControls.style.display = "flex";
+      ownerNotice.style.display = "none";
+      editFromProductButton.style.display = "none";
+    }
+
     productModal.classList.add("show");
   }
 }
@@ -406,6 +775,11 @@ const openPurchaseForm = async () => {
     }
 
     const productData = productSnap.data();
+    if (auth.currentUser.uid === productData.seller) {
+      alert("You cannot buy your own listing.");
+      return;
+    }
+
     if (productData.quantity < quantity) {
       alert("Not enough items in stock.");
       return;
@@ -510,6 +884,10 @@ const showConfirmation = () => {
 
 const handleBuy = async () => {
   if (!currentProduct) return;
+  if (auth.currentUser && currentProduct.seller === auth.currentUser.uid) {
+    alert("You cannot buy your own listing.");
+    return;
+  }
 
   const quantity = currentQuantity;
   
@@ -557,6 +935,12 @@ const handleBuy = async () => {
 closeProductBtn.addEventListener("click", closeProductModal);
 cancelBuyBtn.addEventListener("click", closeProductModal);
 buyButton.addEventListener("click", openPurchaseForm);
+editFromProductButton?.addEventListener("click", async () => {
+  if (!currentProductId) return;
+  const listingId = currentProductId;
+  closeProductModal();
+  await openEditListingModal(listingId);
+});
 
 // Event listeners for purchase form modal
 closePurchaseFormBtn.addEventListener("click", closePurchaseForm);
@@ -608,6 +992,7 @@ productModal.addEventListener("click", (e) => {
 
 // Make openProductModal global for onclick
 window.openProductModal = openProductModal;
+window.openEditListingModal = openEditListingModal;
 
 function renderAuthSpot() {
   if (auth.currentUser) {
@@ -616,8 +1001,8 @@ function renderAuthSpot() {
     document.querySelector("#listItem").addEventListener('click', () => openListModal());
     document.querySelector("#myProfile").addEventListener('click', () => openProfileModal());
   } else {
-    authSpot.innerHTML = `Not Logged In <button class="btn-auth" id="login">Register / Sign In</button>`
-    document.querySelector("#login").addEventListener('click', () => login());
+    authSpot.innerHTML = `<button class="btn-auth" disabled>Not Logged In</button><button class="btn-auth" id="login">Register / Sign In</button>`
+    document.querySelector("#login").addEventListener('click', () => openAuthMethodModal());
   }
 }
 
@@ -626,7 +1011,7 @@ const registerUserInDb = async (user) => {
   const existingUser = await getDoc(userRef);
   const isNewUser = !existingUser.exists();
   await setDoc(userRef, {
-    fullName: user.displayName,
+    fullName: user.displayName || user.email?.split("@")[0] || "User",
     email: user.email,
     createdAt: new Date()
   }, { merge: true }); // 'merge' prevents overwriting if they log in again
@@ -635,6 +1020,85 @@ const registerUserInDb = async (user) => {
 
 // Store all products for filtering
 let allProducts = [];
+let featuredProducts = [];
+let featuredIndex = 0;
+let featuredRaf = null;
+let featuredAutoScrollPxPerFrame = 0.1;
+let featuredAutoScrollStoppedByUser = false;
+const featuredTrack = document.querySelector("#featuredTrack");
+let featuredSetWidth = 0;
+
+const renderFeaturedItem = () => {
+  if (!featuredTrack) return;
+  if (!featuredProducts.length) {
+    featuredTrack.innerHTML = `<p class="no-results">No featured items yet</p>`;
+    return;
+  }
+
+  const ordered = featuredProducts.map((_, i) => featuredProducts[(featuredIndex + i) % featuredProducts.length]);
+  const estimatedCardWidth = 352;
+  const viewportWidth = featuredTrack.clientWidth || 1200;
+  const minCards = Math.max(30, Math.ceil((viewportWidth * 6) / estimatedCardWidth));
+  const displaySet = Array.from({ length: minCards }, (_, i) => ordered[i % ordered.length]);
+  const cardsHtml = displaySet.map((product) => {
+    const imageHtml = product.imageUrl ? `<img src="${product.imageUrl}" alt="${product.name}">` : `<div class="no-image">No Image</div>`;
+    return `
+      <div class="featured-card" onclick="openProductModal('${product.id}')">
+        <div class="featured-image">${imageHtml}</div>
+        <div class="featured-content">
+          <div class="featured-title">${product.name}</div>
+          <div class="featured-meta">${product.category} • Qty: ${product.quantity}</div>
+          <div class="featured-price">$${product.price}</div>
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  const durationSeconds = Math.max(45, featuredProducts.length * 10);
+  featuredTrack.innerHTML = `
+    <div class="featured-list" style="--scroll-duration:${durationSeconds}s;">
+      <div class="featured-set">${cardsHtml}</div>
+    </div>
+  `;
+
+  const featuredSet = featuredTrack.querySelector(".featured-set");
+  if (featuredSet) {
+    requestAnimationFrame(() => {
+      const setWidth = featuredSet.offsetWidth;
+      if (setWidth <= 0) return;
+      featuredSetWidth = setWidth;
+      featuredTrack.scrollLeft = 0;
+      featuredAutoScrollPxPerFrame = Math.max(0.05, setWidth / (durationSeconds * 60));
+    });
+  }
+};
+
+const startFeaturedRotation = () => {
+  if (featuredAutoScrollStoppedByUser) return;
+  if (featuredRaf) cancelAnimationFrame(featuredRaf);
+  const tick = () => {
+    if (featuredAutoScrollStoppedByUser) return;
+    if (!featuredTrack) return;
+    if (featuredSetWidth > 0) {
+      featuredTrack.scrollLeft += featuredAutoScrollPxPerFrame;
+      if (featuredTrack.scrollLeft >= featuredSetWidth) {
+        featuredTrack.scrollLeft = 0;
+      }
+    }
+    featuredRaf = requestAnimationFrame(tick);
+  };
+  featuredRaf = requestAnimationFrame(tick);
+};
+
+const setFeaturedProducts = (products) => {
+  featuredAutoScrollStoppedByUser = false;
+  featuredProducts = [...products]
+    .sort((a, b) => Number(b.quantity || 0) - Number(a.quantity || 0))
+    .slice(0, 6);
+  featuredIndex = 0;
+  renderFeaturedItem();
+  startFeaturedRotation();
+};
 
 const fetchAndRenderProducts = async () => {
   const productsRef = collection(db, "Products");
@@ -650,6 +1114,7 @@ const fetchAndRenderProducts = async () => {
     });
   });
   
+  setFeaturedProducts(allProducts);
   renderProducts(allProducts);
 };
 
@@ -699,6 +1164,21 @@ const searchBar = document.querySelector(".search-bar");
 searchBar.addEventListener("input", (e) => {
   filterAndRenderProducts(e.target.value);
 });
+
+featuredTrack?.addEventListener("wheel", (e) => {
+  e.preventDefault();
+  featuredAutoScrollStoppedByUser = true;
+  if (featuredRaf) cancelAnimationFrame(featuredRaf);
+  featuredTrack.scrollLeft += e.deltaY + e.deltaX;
+  if (featuredSetWidth > 0) {
+    if (featuredTrack.scrollLeft >= featuredSetWidth) {
+      featuredTrack.scrollLeft = 0;
+    }
+    while (featuredTrack.scrollLeft < 0) {
+      featuredTrack.scrollLeft += featuredSetWidth;
+    }
+  }
+}, { passive: false });
 
 // Call fetchAndRenderProducts on page load
 fetchAndRenderProducts();
